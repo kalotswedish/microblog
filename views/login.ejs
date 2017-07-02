@@ -1,0 +1,27 @@
+	<%- include('./header.ejs') %>
+		
+		<div class="container">
+			
+      <form class="form-signin" action="login" method="post">
+			<% if (error!=='') {%>
+					<div class="alert alert-danger" role="alert">
+					<span class="sr-only">Error:</span>
+					该用户不存在
+					</div>
+			<% } %>
+        <h2 class="form-signin-heading">请登录</h2>
+        <label for="username" class="sr-only">Email address</label>
+        <input type="text" id="username" name="username" class="form-control" placeholder="请输入账号" required autofocus>
+        <label for="password" class="sr-only">Password</label>
+        <input type="password" id="password" name="password" class="form-control" placeholder="请输入密码" required>
+        <div class="checkbox">
+          <label>
+            <input type="checkbox" value="remember-me"> 记住我
+          </label>
+        </div>
+        <button class="btn btn-lg btn-primary btn-block" type="submit">登 录</button>
+      </form>
+
+    </div> <!-- /container -->
+		
+		<%- include('./footer.ejs') %>

@@ -1,0 +1,41 @@
+	<%-include('./header.ejs')%>
+
+    <!-- Main jumbotron for a primary marketing message or call to action -->
+    <div class="jumbotron">
+      <div class="container">
+        <h1>欢迎来到Microblog</h1>
+        <p>Microblog 是一个基于 Node.js 的微博系统。</p>
+        <% if (!user) {%>
+					<p>
+						<a class="btn btn-primary" href="/login" role="button">登录</a>
+						<a class="btn btn-primary" href="/reg" role="button">注册</a>
+					</p>
+				<% } else {%>
+					<form action="/post" method="post">
+						<textarea rows="5" cols="66" placeholder="请输入微博"></textarea><br />
+						<button type="button" class="btn btn-primary">发表</button>
+					</form>
+				<% } %>	
+      </div>
+    </div>
+
+    <div class="container">
+      <!-- Example row of columns -->
+      <div class="row">
+        <div class="col-md-4">
+          <h2>Windy 说</h2>
+          <p>第一篇微博</p>
+        </div>
+        <div class="col-md-4">
+          <h2>闻琪说</h2>
+          <p>事理因人言而悟者，有悟还有迷，总不如自悟之了了 </p>
+       </div>
+        <div class="col-md-4">
+          <h2>Kalot说</h2>
+          <p>意兴因外境而得者，有得还有失，总不如自得之休休</p>
+        </div>
+      </div> 
+		</div> <!-- /container -->
+		
+		<%-include('./footer.ejs')%>
+
