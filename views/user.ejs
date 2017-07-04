@@ -9,10 +9,10 @@
 	
 	<h3><%= username%>的主页</h3>
 	
-	<% data.forEach(function(onedata) { %>
+	<% items.forEach(function(item) { %>
 		<div>
-			<small><%=onedata.time%></small><br />
-			<p class="post"><%=onedata.post%></p>
+			<small><%=item.time%></small><br />
+			<p class="post"><%=item.post%></p>
 		</div>
 	<%})%>
 

@@ -16,7 +16,14 @@ router.use(function(req, res, next) {
 //网站主页
 router.get('/', function(req, res, next) {
   res.locals.page_title = '微博主页';
-  res.render('index');
+  Post.get()
+    .then(function(docs) {
+      res.render('index.ejs', {items: docs});
+    })
+    .catch(function(err) {
+      //正式上线时，需另做设置
+      res.status(500).send('Server internal error: '+err.message);      
+    });
 });
 
 //用户主页
@@ -33,7 +40,7 @@ router.get('/user/:username', function(req, res, next) {
       //对docs做验证
       res.locals.page_title = `${req.params.username}的主页`;
       res.locals.custom_css = 'user.css';
-      res.render('user.ejs', {data: docs, username: req.params.username});
+      res.render('user.ejs', {items: docs, username: req.params.username});
     })
     .catch(function(err) {
       //正式上线时，需另做设置
