@@ -88,25 +88,32 @@ router.get('/login', function(req, res) {
 //接收并处理登录数据
 router.post('/login', function(req, res) {
   res.locals.page_title = '登录'; 
+  res.locals.error = '';
   if (has_logged_in) {
     res.set('refresh', '2, http://localhost:8080/');
     res.send('<h3>您已登录_登录数据处理页</h3>');
     return;
   }
 
-  User.get(req.body['username']) //
+  User.get(req.body.username) //
     .then(function(docs) {
+      res.locals.custom_css = 'login.css';
       if (docs.length == 0) {
         res.locals.error = '该用户不存在';
-        res.locals.custom_css = 'login.css'; 
         res.render('login.ejs');
         return;
       } 
+      if (req.body.password !== docs[0].password) {
+        res.locals.error = '密码错误';
+        res.render('login.ejs');
+        return;
+      }
 
       req.session.user = {
         username: docs[0].username,
         password: docs[0].password
       };
+
       res.set('refresh', '1, http://localhost:8080/user/'+docs[0].username);
       res.send('<h3>登录成功</h3>');
     })
