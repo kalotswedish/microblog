@@ -35,6 +35,7 @@ function insertDocument(db, col, data) {
 function findDocumentByQuery(db, col, query) {
     return new Promise(function(resolve, reject) {
         var collection = db.collection(col);
+        //此处未对查询的条数限制，后续需要设置参数进行限制
         collection.find(query).toArray(function(err, docs) {
             if (err) {
                 console.log('Error querying database.');
