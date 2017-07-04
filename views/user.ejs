@@ -1,0 +1,21 @@
+<%-include('./header.ejs')%>
+
+<div class="container">
+	<br />
+	<form action="/post" method="post">
+		<textarea rows="5" cols="66" name="post" placeholder="请输入微博"></textarea><br />
+		<button type="submit" class="btn btn-primary">发表</button>
+	</form>
+	
+	<h3><%= username%>的主页</h3>
+	
+	<% data.forEach(function(onedata) { %>
+		<div>
+			<small><%=onedata.time%></small><br />
+			<p class="post"><%=onedata.post%></p>
+		</div>
+	<%})%>
+
+</div>
+
+<%-include('./footer.ejs')%>

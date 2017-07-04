@@ -1,6 +1,7 @@
 const express = require('express');
 var router = express.Router();
 var User = require('../models/user.js');
+var Post = require('../models/post.js');
 var has_logged_in = false;
 
 //判断用户是否已登录
@@ -20,17 +21,49 @@ router.get('/', function(req, res, next) {
 
 //用户主页
 router.get('/user/:username', function(req, res, next) {
-  res.redirect('/');
+  res.locals.page_title = '用户页面';
+  if (!has_logged_in) {
+    res.set('refresh', '2, http://localhost:8080');
+    res.send('<h3>请先登录您的账号</h3>');
+    return;
+  }
+  
+  Post.get(req.params.username)
+    .then(function(docs) {
+      //对docs做验证
+      res.locals.page_title = `${req.params.username}的主页`;
+      res.locals.custom_css = 'user.css';
+      res.render('user.ejs', {data: docs, username: req.params.username});
+    })
+    .catch(function(err) {
+      //正式上线时，需另做设置
+      res.status(500).send('Server internal error: '+err.message);
+    });
 });
 
 router.get('/user', function(req, res) {
-  
   res.redirect('/');
 });
 
 //发表微博
 router.post('/post', function(req, res) {
-  res.end('coming soon');
+  res.locals.page_title = '发表微博';
+  if (!has_logged_in) {
+    res.set('refresh', '2, http://localhost:8080');
+    res.send('<h3>您必须首先登陆，然后才能发表微博</h3>');
+    return;
+  }
+  var username = req.session.user.username;
+  var post = req.body.post;
+  var newPost = new Post(username, post);
+  newPost.save()
+    .then(()=>{
+      res.set('refresh', `1, http://localhost:8080/user/${username}`);
+      res.send('<h3>发表成功</h3>');
+    })
+    .catch((err)=>{
+      res.status(500).send('Server internal error: '+err.message);
+    });
 });
 
 //获取登录页面
