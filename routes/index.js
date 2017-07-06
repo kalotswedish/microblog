@@ -2,6 +2,7 @@ const express = require('express');
 var router = express.Router();
 var User = require('../models/user.js');
 var Post = require('../models/post.js');
+var encryptData = require('../models/pass.js').encryptData;
 var has_logged_in = false;
 
 //判断用户是否已登录
@@ -102,8 +103,9 @@ router.post('/login', function(req, res) {
         res.locals.error = '该用户不存在';
         res.render('login.ejs');
         return;
-      } 
-      if (req.body.password !== docs[0].password) {
+      }
+      if (typeof docs[0].password !== 'string') return; 
+      if (encryptData(req.body.password) !== docs[0].password) {
         res.locals.error = '密码错误';
         res.render('login.ejs');
         return;
@@ -151,25 +153,92 @@ router.get('/reg', function(req, res) {
 //发送注册数据
 router.post('/reg', function(req, res) {
   res.locals.page_title = '注册';
-  if (req.body['password'] !== req.body['password-repeat']) {
-    res.locals.error = '两次输入的密码必须相同。';
+
+  if (typeof req.body.username !== 'string') {
+    res.status(500).send('Server internal error: '+err.message);
+    return;
+  }
+  
+  //对数据的前后空格进行处理
+  var user_username = req.body.username.trim(); 
+  var user_password = req.body.password.trim();
+  var user_password_repeat = req.body['password-repeat'].trim();
+
+  if ((user_username === '') || (user_password === '') || (user_password_repeat === '')) {
+    res.locals.error = '用户名或密码不能为空';
     res.render('reg.ejs');
     return;
   }
+
+  if (user_password !== user_password_repeat) {
+    res.locals.error = '两次输入的密码必须相同';
+    res.render('reg.ejs');
+    return;
+  }
+
+  //验证密码长度和所输入的字符
+  if (user_password.length>5 && user_password.length<16) {
+    for (let i=0; i<user_password.length; i++) {
+      let char_code = user_password.charCodeAt(i);
+      if ((char_code>126) || (char_code<32) || (char_code===32) || (char_code===60) || (char_code===62)) {
+        res.locals.error = '密码不得包含空格，且只能包含英文字母、数字，或\'<\'和\'>\'以外的符号';
+        res.render('reg.ejs');
+        return;
+      }
+    }
+  } else {
+    res.locals.error = '密码长度必须在6到15个字符之间';
+    res.render('reg.ejs');
+    return;
+  }
+
+  if (user_username.length>=2 && user_username.length<=15) { //限制用户名在15个字以内
+    for (let i=0; i<user_username.length; i++) {
+      let char_code = user_password.charCodeAt(i);
+      if ((char_code===32) || (char_code===60) || (char_code===62)) {//用户名不得包含空格以及>和<
+        res.locals.error = '用户名不得包含空格以及\'>\'和\'<\'';
+        res.render('reg.ejs');
+        return; 
+      }
+    }
+  } else {
+    res.locals.error = '用户名必须在2到15个中英文字符之间';
+    res.render('reg.ejs');
+    return;
+  }
+  
+  User.get(user_username)
+    .then(function(docs) {
+      if (docs.length>0) {
+        if (user_username === docs[0].username) { //用户名已被注册
+          res.locals.error = '该用户名已被注册！';
+          res.render('reg.ejs');
+          return;
+        }
+      }
+    })
+    .catch(function(err) {
+      res.status(500).send('Server internal error: '+err.message);
+      return;
+    });
+
+  var user_password_crypted = encryptData(user_password);//对密码加密
   var user = {
-    username: req.body['username'],
-    password: req.body['password']
+    username: user_username,
+    password: user_password_crypted
   };
   var newUser = new User(user);
   newUser.save()
     .then(function() {
       req.session.user = newUser;
-      res.set('refresh', '2, http://localhost:8080/user/'+`${req.body['username']}`);
+      res.set('refresh', '2, http://localhost:8080/user/'+`${user_username}`);
       res.send('<h3>注册成功！</h3>');
+      return;
     })
     .catch(function(err) {
-      //res.set('refresh', '3, http://localhost:8080/');
+      res.set('refresh', '3, http://localhost:8080/');
       res.status(500).send('Server internal error: '+err.message);
+      return;
     });
 });
 

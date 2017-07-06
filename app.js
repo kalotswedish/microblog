@@ -43,7 +43,6 @@ app.locals.error = '';
 
 app.use(function(req, res, next) {
   app.locals.user = req.session.user;
-  console.log('user is', app.locals.user);
   next();
 });
 
